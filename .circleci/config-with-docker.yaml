@@ -7,6 +7,7 @@ stages:
 variables:
   MAVEN_CLI_OPTS: "-s .m2/settings.xml --batch-mode --errors --fail-at-end"
   DOCKER_IMAGE: registry.example.com/myapp:$CI_COMMIT_SHA
+  KUBECONFIG: /root/.kube/config
 
 cache:
   paths:
@@ -43,6 +44,10 @@ dockerize:
 
 deploy:
   stage: deploy
+  before_script:
+    - echo "Setting up kubeconfig..."
+    - mkdir -p /root/.kube
+    - echo "$KUBECONFIG_DATA" > $KUBECONFIG
   script:
     - echo "Deploying to Kubernetes..."
     - kubectl set image deployment/myapp myapp=$DOCKER_IMAGE --record
